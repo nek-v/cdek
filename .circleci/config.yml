@@ -19,6 +19,8 @@ jobs:
       - image: circleci/python:3.6.4
     steps:
       - checkout  # checkout source code to working directory
+      - run: cp .pypirc ~/
+      - run: echo "password = $TESTPYPI_API_KEY" >> ~/.pypirc
       - run:
           command: |  # create whl, install twine and publish to Test PyPI
             python3 setup.py sdist bdist_wheel
