@@ -13,7 +13,7 @@ jobs:
             pipenv install pytest
       - run:
           command: |  # Run test suite
-            pipenv run pytest
+#            pipenv run pytest
   test_pypi_publish:
     docker:
       - image: circleci/python:3.6.4
@@ -24,7 +24,7 @@ jobs:
             python3 setup.py sdist bdist_wheel
             sudo pip install pipenv
             pipenv install twine
-#            pipenv run twine upload --repository testpypi dist/*
+            pipenv run twine upload --repository testpypi dist/*
   pypi_publish:
     docker:
       - image: circleci/python:3.6.4
