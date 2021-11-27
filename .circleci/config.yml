@@ -7,11 +7,11 @@ jobs:
       - checkout  # checkout source code to working directory
       - run:
           command: |  # create whl and use pipenv to install dependencies
-            sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
-            sudo pip3 install setuptools --upgrade
-            sudo pip3 install --upgrade pip
-            sudo pip3 install pipenv
+            sudo pip3 install pip pipenv twine setuptools --upgrade
+#            sudo pip3 install --upgrade pip
+#            sudo pip3 install pipenv
             python3 setup.py sdist bdist_wheel
+#            pipenv install twine
             pipenv install dist/*.whl
             pipenv install pytest
 #      - run:
@@ -27,11 +27,11 @@ jobs:
       - run:
           command: |  # create whl, install twine and publish to Test PyPI
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
-            sudo pip3 install setuptools --upgrade
-            sudo pip3 install --upgrade pip
-            sudo pip3 install pipenv
+            sudo pip3 install pip pipenv twine setuptools --upgrade
+#            sudo pip3 install --upgrade pip
+#            sudo pip3 install pipenv
             python3 setup.py sdist bdist_wheel
-            pipenv install twine
+#            pipenv install twine
             pipenv run twine upload --repository testpypi dist/*
   pypi_publish:
     docker:
@@ -41,12 +41,11 @@ jobs:
       - run:
           command: |  # create whl, install twine and publish to PyPI
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
-            sudo pip3 install setuptools --upgrade
-            sudo pip3 install --upgrade pip
-            sudo pip3 install pipenv
+            sudo pip3 install pip pipenv twine setuptools --upgrade
+#            sudo pip3 install --upgrade pip
+#            sudo pip3 install pipenv
             python3 setup.py sdist bdist_wheel
-            python setup.py sdist bdist_wheel
-            pipenv install twine
+#            pipenv install twine
 #            pipenv run twine upload dist/*
 workflows:
   build_test_publish:
