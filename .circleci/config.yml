@@ -61,13 +61,24 @@ jobs:
       - image: cimg/base:stable-18.04
     steps:
       - checkout  # checkout source code to working directory
+      - run:
+          name: Install system packages
+          command: |
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install -y git python3-pip
+      - run:
+          name: Upgrade pip and setuptools
+          command: |  # create whl and use pipenv to install dependencies
+            sudo pip3 install pip --upgrade
+            sudo pip3 install setuptools --upgrade
+      - run:
+          name: Upgrade pipenv and twine
+          command: |  # create whl and use pipenv to install dependencies
+            sudo pip3 install pipenv twine --upgrade
       - run: cp .pypirc ~/
       - run: echo "password = $TESTPYPI_API_KEY" >> ~/.pypirc
       - run:
           command: |  # create whl, install twine and publish to PyPI
-            sudo apt update && sudo apt upgrade -y
-            sudo apt install -y git python3-pip
-            sudo pip3 install pip pipenv twine setuptools --upgrade
             python3 setup.py sdist bdist_wheel
       #            pipenv run twine upload dist/*
       - run: rm -rf ~/.pypirc
