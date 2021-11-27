@@ -8,7 +8,7 @@ jobs:
       - run:
           command: |  # create whl and use pipenv to install dependencies
             python3 setup.py sdist bdist_wheel
-            sudo pip install pipenv
+            sudo pip3 install pipenv
             pipenv install dist/*.whl
             pipenv install pytest
 #      - run:
@@ -24,7 +24,7 @@ jobs:
       - run:
           command: |  # create whl, install twine and publish to Test PyPI
             python3 setup.py sdist bdist_wheel
-            sudo pip install pipenv
+            sudo pip3 install pipenv
             pipenv install twine
             pipenv run twine upload --repository testpypi dist/*
   pypi_publish:
@@ -35,7 +35,7 @@ jobs:
       - run:
           command: |  # create whl, install twine and publish to PyPI
             python3 setup.py sdist bdist_wheel
-            sudo pip install pipenv
+            sudo pip3 install pipenv
             pipenv install twine
 #            pipenv run twine upload dist/*
 workflows:
@@ -48,7 +48,7 @@ workflows:
           filters:
             branches:
               only:
-                - develop
+                - dev
       - pypi_publish:
           requires:
             - build_test
