@@ -11,8 +11,8 @@ jobs:
             sudo pip install pipenv
             pipenv install dist/*.whl
             pipenv install pytest
-      - run:
-          command: |  # Run test suite
+#      - run:
+#          command: |  # Run test suite
 #            pipenv run pytest
   test_pypi_publish:
     docker:
