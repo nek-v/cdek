@@ -7,6 +7,7 @@ jobs:
       - checkout  # checkout source code to working directory
       - run:
           command: |  # create whl and use pipenv to install dependencies
+            sudo apt update && sudo apt upgrade -y && sudo apt install -y git
             sudo pip install setuptools --upgrade
             sudo pip install --upgrade pip
             sudo pip install pipenv
@@ -25,6 +26,7 @@ jobs:
       - run: echo "password = $TESTPYPI_API_KEY" >> ~/.pypirc
       - run:
           command: |  # create whl, install twine and publish to Test PyPI
+            sudo apt update && sudo apt upgrade -y && sudo apt install -y git
             sudo pip install setuptools --upgrade
             sudo pip install --upgrade pip
             sudo pip install pipenv
@@ -38,6 +40,7 @@ jobs:
       - checkout  # checkout source code to working directory
       - run:
           command: |  # create whl, install twine and publish to PyPI
+            sudo apt update && sudo apt upgrade -y && sudo apt install -y git
             sudo pip install setuptools --upgrade
             sudo pip install --upgrade pip
             sudo pip install pipenv
