@@ -35,8 +35,8 @@ jobs:
           command: |  # create whl and use pipenv to install dependencies
             sudo pip3 install pip pipenv twine setuptools --upgrade
       - run:
-        command: |
-          python3 setup.py sdist bdist_wheel
+          command: |
+            python3 setup.py sdist bdist_wheel
       - run: cp .pypirc ~/
       - run: echo "password = $TESTPYPI_API_KEY" >> ~/.pypirc
       - run:
