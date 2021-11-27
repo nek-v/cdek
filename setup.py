@@ -37,9 +37,9 @@ setup(name='cdek',
       setup_requires=["setuptools-git-versioning"],
       version_config={
           # "template": "{tag}",
-          # "dev_template": "{branch}.dev{ccount}",
-          # "dirty_template": "{branch}.dev{ccount}",
-          "branch_formatter": format_branch_name,
-          "starting_version": "0.0.1",
+          "dev_template": "{tag}.post{ccount}+git.{sha}",
+          "dirty_template": "{tag}.post{ccount}+git.{sha}.dirty",
+          # "branch_formatter": format_branch_name,
+          # "starting_version": "0.0.1",
       },
       python_requires='>=3.6')
