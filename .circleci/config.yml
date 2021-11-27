@@ -9,7 +9,7 @@ jobs:
           command: |  # create whl and use pipenv to install dependencies
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
             sudo pip3 install setuptools --upgrade
-            sudo pip3 install --upgrade pip3
+            sudo pip3 install --upgrade pip
             sudo pip3 install pipenv
             python3 setup.py sdist bdist_wheel
             pipenv install dist/*.whl
@@ -28,7 +28,7 @@ jobs:
           command: |  # create whl, install twine and publish to Test PyPI
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
             sudo pip3 install setuptools --upgrade
-            sudo pip3 install --upgrade pip3
+            sudo pip3 install --upgrade pip
             sudo pip3 install pipenv
             python3 setup.py sdist bdist_wheel
             pipenv install twine
@@ -42,7 +42,7 @@ jobs:
           command: |  # create whl, install twine and publish to PyPI
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
             sudo pip3 install setuptools --upgrade
-            sudo pip3 install --upgrade pip3
+            sudo pip3 install --upgrade pip
             sudo pip3 install pipenv
             python3 setup.py sdist bdist_wheel
             python setup.py sdist bdist_wheel
