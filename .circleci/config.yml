@@ -7,6 +7,7 @@ jobs:
       - checkout  # checkout source code to working directory
       - run:
           command: |  # create whl and use pipenv to install dependencies
+            sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
             sudo pip3 install pip pipenv twine setuptools --upgrade
             python3 setup.py sdist bdist_wheel
             pipenv install dist/*.whl
@@ -27,17 +28,22 @@ jobs:
             sudo pip3 install pip pipenv twine setuptools --upgrade
             python3 setup.py sdist bdist_wheel
             pipenv run twine upload --repository testpypi dist/*
+      - run: rm -rf ~/.pypirc
   pypi_publish:
     docker:
       - image: circleci/python:3.6.4
     steps:
       - checkout  # checkout source code to working directory
+      - run: cp .pypirc ~/
+      - run: echo "password = $TESTPYPI_API_KEY" >> ~/.pypirc
       - run:
           command: |  # create whl, install twine and publish to PyPI
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
             sudo pip3 install pip pipenv twine setuptools --upgrade
             python3 setup.py sdist bdist_wheel
 #            pipenv run twine upload dist/*
+      - run: rm -rf ~/.pypirc
+#
 workflows:
   build_test_publish:
     jobs:
