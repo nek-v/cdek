@@ -8,7 +8,8 @@ jobs:
       - run:
           name: Install system packages
           command: |
-            sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install -y git python3-pip
       - run:
           name: Upgrade pip and setuptools
           command: |  # create whl and use pipenv to install dependencies
@@ -34,7 +35,8 @@ jobs:
       - run:
           name: Install system packages
           command: |
-            sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install -y git python3-pip
       - run:
           name: Upgrade pip and setuptools
           command: |  # create whl and use pipenv to install dependencies
@@ -63,7 +65,8 @@ jobs:
       - run: echo "password = $TESTPYPI_API_KEY" >> ~/.pypirc
       - run:
           command: |  # create whl, install twine and publish to PyPI
-            sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
+            sudo apt update && sudo apt upgrade -y
+            sudo apt install -y git python3-pip
             sudo pip3 install pip pipenv twine setuptools --upgrade
             python3 setup.py sdist bdist_wheel
       #            pipenv run twine upload dist/*
