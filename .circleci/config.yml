@@ -18,7 +18,7 @@ jobs:
       - run:
           name: Upgrade pipenv and twine
           command: |  # create whl and use pipenv to install dependencies
-            sudo pip3 install pipenv twine --upgrade
+            sudo pip3 install pipenv twine wheel --upgrade
       - run:
           command: |
             python3 setup.py sdist bdist_wheel
@@ -45,7 +45,7 @@ jobs:
       - run:
           name: Upgrade pipenv and twine
           command: |  # create whl and use pipenv to install dependencies
-            sudo pip3 install pipenv twine --upgrade
+            sudo pip3 install pipenv twine wheel --upgrade
       - run:
           command: |
             python3 setup.py sdist bdist_wheel
@@ -74,7 +74,7 @@ jobs:
       - run:
           name: Upgrade pipenv and twine
           command: |  # create whl and use pipenv to install dependencies
-            sudo pip3 install pipenv twine --upgrade
+            sudo pip3 install pipenv twine wheel --upgrade
       - run: cp .pypirc ~/
       - run: echo "password = $TESTPYPI_API_KEY" >> ~/.pypirc
       - run:
