@@ -10,9 +10,14 @@ jobs:
           command: |
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
       - run:
-          name: Upgrade pip
+          name: Upgrade pip and setuptools
           command: |  # create whl and use pipenv to install dependencies
-            sudo pip3 install pip pipenv twine setuptools --upgrade
+            sudo pip3 install pip --upgrade
+            sudo pip3 install setuptools --upgrade
+      - run:
+          name: Upgrade pipenv and twine
+          command: |  # create whl and use pipenv to install dependencies
+            sudo pip3 install pipenv twine --upgrade
       - run:
           command: |
             python3 setup.py sdist bdist_wheel
@@ -31,9 +36,14 @@ jobs:
           command: |
             sudo apt update && sudo apt upgrade -y && sudo apt install -y git python3-pip
       - run:
-          name: Upgrade pip
+          name: Upgrade pip and setuptools
           command: |  # create whl and use pipenv to install dependencies
-            sudo pip3 install pip pipenv twine setuptools --upgrade
+            sudo pip3 install pip --upgrade
+            sudo pip3 install setuptools --upgrade
+      - run:
+          name: Upgrade pipenv and twine
+          command: |  # create whl and use pipenv to install dependencies
+            sudo pip3 install pipenv twine --upgrade
       - run:
           command: |
             python3 setup.py sdist bdist_wheel
