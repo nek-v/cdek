@@ -1,5 +1,4 @@
 from setuptools import setup, find_packages
-from pathlib import Path
 import re
 
 with open("README.md", "r") as fh:
@@ -37,9 +36,9 @@ setup(name='cdek',
       ],
       setup_requires=["setuptools-git-versioning"],
       version_config={
-          "template": "{tag}",
-          "dev_template": "{branch}.develop{ccount}",
-          "dirty_template": "{branch}.develop{ccount}",
+          # "template": "{tag}",
+          # "dev_template": "{branch}.dev{ccount}",
+          # "dirty_template": "{branch}.dev{ccount}",
           "branch_formatter": format_branch_name,
           "starting_version": "0.0.1",
       },
