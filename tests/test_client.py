@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # -*- coding: utf-8 -*-
 
 from cdek.client import CDEKClient
@@ -18,3 +19,6 @@ def test_get_shipping_cost_by_tariff_code():
     client = _auth()
     response = client.get_shipping_cost_by_tariff_code
     return response
+=======
+# encoding: utf-8
+>>>>>>> origin/develop
