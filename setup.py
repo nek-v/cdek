@@ -1,10 +1,11 @@
 from setuptools import setup, find_packages
+from pathlib import Path
 import re
 
-with open("README.md", "r") as fh:
+with open(Path(__file__).absolute().parent/"README.md", "r") as fh:
     long_description = fh.read()
 
-with open('requirements.txt') as f:
+with open(Path(__file__).absolute().parent/"requirements.txt") as f:
     requirements = f.read().splitlines()
 
 
