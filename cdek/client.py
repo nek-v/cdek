@@ -15,7 +15,9 @@ from requests_oauthlib import OAuth2Session
 
 
 class CDEKClient:
-    BASE_URI = 'https://api.edu.cdek.ru/v2'
+    PROD_BASE_URI = 'https://api.cdek.ru/v2'
+
+    TEST_BASE_URI = 'https://api.edu.cdek.ru/v2'
 
     CITIES_URI = '/location/cities'
 
@@ -23,17 +25,17 @@ class CDEKClient:
 
     ORDERS_URI = '/orders'
 
-    PROD_TOKEN_URI = '/oauth/token?grant_type=client_credentials'
+    PREALERT_URI = '/prealert'
 
-    TEST_TOKEN_URI = '/oauth/token?grant_type=client_credentials'
+    TOKEN_URI = '/oauth/token?grant_type=client_credentials'
 
     def __init__(self, client_id, client_secret, prod_environment):
         self.client_secret = client_secret
         self.client_id = client_id
         if not prod_environment:
-            self.url = self.BASE_URI + self.TEST_TOKEN_URI
+            self.url = self.TEST_BASE_URI + self.TOKEN_URI
         else:
-            self.url = self.BASE_URI + self.PROD_TOKEN_URI
+            self.url = self.PROD_BASE_URI + self.TOKEN_URI
 
     def get_shipping_cost_by_tariff_code(
             self,
@@ -111,6 +113,30 @@ class CDEKClient:
         response = self._request(url, data=json.dumps(params))
         return response.json()
 
+    def info_orders(
+            self,
+            uuid: Optional[str] = None,
+            cdek_number: Optional[str] = None,
+            im_number: Optional[str] = None,
+    ):
+        if uuid:
+            url = self.BASE_URI + self.ORDERS_URI+'/'+uuid
+        elif cdek_number:
+            url = self.BASE_URI + self.ORDERS_URI + '?cdek_number=' + cdek_number
+        elif im_number:
+            url = self.BASE_URI + self.ORDERS_URI + '?im_number=' + im_number
+        else:
+            raise ValueError("No query parameters defined!")
+        response = self._request(url, data={}, method='GET')
+        return response.json()
+
+
+
+    def delete_orders(self, uuid: str):
+        url = self.BASE_URI+self.ORDERS_URI+'/'+uuid
+        response = self._request(url, data={}, method='DELETE')
+        return response.json()
+
     def get_cities(
             self,
             country_codes: Optional[str] = None,
@@ -138,6 +164,26 @@ class CDEKClient:
         response = self._request(url, data=params, method='GET')
         return response.json()
 
+    def create_prealert(
+            self,
+            planned_date: datetime,
+            shipment_point: str,
+            orders: dict,
+    ):
+        params = {
+            'planned_date': planned_date,
+            'shipment_point': shipment_point,
+            'orders': orders
+        }
+        url = self.BASE_URI + self.PREALERT_URI
+        response = self._request(url, data=json.dumps(params))
+        return response.json()
+
+    def info_prealert(self, uuid: str):
+        url = self.BASE_URI + self.PREALERT_URI+'/'+uuid
+        response = self._request(url, data={}, method='GET')
+        return response.json()
+
     def _request(self, url: str, data: Dict, stream: bool = False, method: str = 'POST'):
         token = self._fetch_token()
         headers = {'Authorization': 'Bearer ' + token, 'Content-type': 'application/json'}
@@ -150,6 +196,8 @@ class CDEKClient:
             )
         elif method == 'POST':
             response = requests.post(url, data=data, stream=stream, headers=headers)
+        elif method == 'DELETE':
+            response = requests.delete(url, stream=stream, headers=headers)
         else:
             raise NotImplementedError(f'Unknown method "{method}"')
         response.raise_for_status()

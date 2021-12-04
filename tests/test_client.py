@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+import datetime
 import pytest
 from contextlib import ExitStack as does_not_raise
 from typing import Dict
@@ -49,34 +51,18 @@ def test_get_shipping_cost_by_tariff_code(cdek_client: CDEKClient, tariff: Dict,
     pytest.param({'type': 2}, pytest.raises(AttributeError), marks=pytest.mark.xfail, id='Type Delivery')
 ])
 def test_order_creation_for_os(cdek_client: CDEKClient, type: Dict,
-                              expectation):
+                               expectation):
     with expectation:
         send_orders = cdek_client.create_orders(
             from_location=
             {
                 "code": "44",
-                "fias_guid": "",
-                "postal_code": "",
-                "longitude": "",
-                "latitude": "",
-                "country_code": "",
-                "region": "",
-                "sub_region": "",
                 "city": "Москва",
-                "kladr_code": "",
                 "address": "пр. Ленинградский, д.4"
             },
             to_location={
                 "code": "270",
-                "fias_guid": "",
-                "postal_code": "",
-                "longitude": "",
-                "latitude": "",
-                "country_code": "",
-                "region": "",
-                "sub_region": "",
                 "city": "Новосибирск",
-                "kladr_code": "",
                 "address": "ул. Блюхера, 32"
             },
             packages=[{
@@ -100,9 +86,7 @@ def test_order_creation_for_os(cdek_client: CDEKClient, type: Dict,
             }],
             recipient={
                 "name": "Иванов Иван",
-                "phones": [{
-                    "number": "+79134637228"
-                }]
+                "phones": [{"number": "+79134637228"}]
             },
             tariff_code=139,
             **type
@@ -121,7 +105,7 @@ def test_order_creation_for_os(cdek_client: CDEKClient, type: Dict,
     pytest.param({'type': 1}, pytest.raises(AttributeError), marks=pytest.mark.xfail, id='Type Online Store')
 ])
 def test_order_creation_for_delivery(cdek_client: CDEKClient, type: Dict,
-                                    expectation):
+                                     expectation):
     with expectation:
         send_orders = cdek_client.create_orders(
             tariff_code=119,
@@ -130,26 +114,11 @@ def test_order_creation_for_delivery(cdek_client: CDEKClient, type: Dict,
                 "company": "Компания",
                 "name": "Петров Петр",
                 "email": "msk@cdek.ru",
-                "phones": [
-                    {
-                        "number": "+79134000101"
-                    }
-                ]
+                "phones": [{"number": "+79134000101"}]
             },
             recipient={
-                "company": "Иванов Иван",
                 "name": "Иванов Иван",
-                "passport_series": "5008",
-                "passport_number": "345123",
-                "passport_date_of_issue": "2019-03-12",
-                "passport_organization": "ОВД Москвы",
-                "tin": "123546789",
-                "email": "email@gmail.com",
-                "phones": [
-                    {
-                        "number": "+79134000404"
-                    }
-                ]
+                "phones": [{"number": "+79130000000"}]
             },
             to_location={
                 "code": "44",
@@ -164,12 +133,7 @@ def test_order_creation_for_delivery(cdek_client: CDEKClient, type: Dict,
                 "kladr_code": "7700000000000",
                 "address": "ул. Блюхера, 32"
             },
-            services=[
-                {
-                    "code": "INSURANCE",
-                    "parameter": "3000"
-                }
-            ],
+            services=[{"code": "INSURANCE", "parameter": "3000"}],
             packages=[
                 {
                     "number": "bar-001",
@@ -190,8 +154,112 @@ def test_order_creation_for_delivery(cdek_client: CDEKClient, type: Dict,
         state = send_orders['requests'][0]['state']
         assert state == 'ACCEPTED'
 
+
+def test_delete_orders(cdek_client: CDEKClient):
+    send_orders = cdek_client.create_orders(
+        from_location=
+        {
+            "code": "44",
+            "city": "Москва",
+            "address": "пр. Ленинградский, д.4"
+        },
+        to_location={
+            "code": "270",
+            "city": "Новосибирск",
+            "address": "ул. Блюхера, 32"
+        },
+        packages=[{
+            "number": "bar-001",
+            "comment": "Упаковка",
+            "height": 10,
+            "items": [{
+                "ware_key": "00055",
+                "payment": {
+                    "value": 3000
+                },
+                "name": "Товар",
+                "cost": 300,
+                "amount": 2,
+                "weight": 700,
+                "url": "www.item.ru"
+            }],
+            "length": 10,
+            "weight": 4000,
+            "width": 10
+        }],
+        recipient={
+            "name": "Иванов Иван",
+            "phones": [{"number": "+79134637228"}]
+        },
+        tariff_code=139,type=2)
+    assert send_orders
+    assert len(send_orders) == 2
+    order = send_orders['entity']
+    assert 'uuid' in order
+    status = cdek_client.info_orders(uuid=order['uuid'])
+    assert status
+    assert 'entity' in status
+    assert status['entity']['uuid'] == order['uuid']
+    assert status['requests'][0]['type'] == 'CREATE'
+    delete_request = cdek_client.delete_orders(uuid=status['entity']['uuid'])
+    assert delete_request
+    assert delete_request['entity']['uuid'] == status['entity']['uuid']
+    assert delete_request['requests'][0]['type'] == 'DELETE'
+
+def test_create_prealert(cdek_client: CDEKClient):
+    send_orders = cdek_client.create_orders(
+        from_location=
+        {
+            "code": "44",
+            "city": "Москва",
+            "address": "пр. Ленинградский, д.4"
+        },
+        to_location={
+            "code": "270",
+            "city": "Новосибирск",
+            "address": "ул. Блюхера, 32"
+        },
+        packages=[{
+            "number": "bar-001",
+            "comment": "Упаковка",
+            "height": 10,
+            "items": [{
+                "ware_key": "00055",
+                "payment": {
+                    "value": 3000
+                },
+                "name": "Товар",
+                "cost": 300,
+                "amount": 2,
+                "weight": 700,
+                "url": "www.item.ru"
+            }],
+            "length": 10,
+            "weight": 4000,
+            "width": 10
+        }],
+        recipient={
+            "name": "Иванов Иван",
+            "phones": [{"number": "+79134637228"}]
+        },
+        tariff_code=139, type=1)
+    assert send_orders
+    assert len(send_orders) == 2
+    order = send_orders['entity']
+    assert 'uuid' in order
+    planned_date = datetime.datetime.today().strftime('%Y-%m-%dT%H:%M:%S+0000')
+    send_prealert = cdek_client.create_prealert(
+        planned_date=planned_date,
+        shipment_point='NSK27',
+        orders = [{'uuid':order['uuid']}]
+    )
+    assert send_prealert
+    assert send_prealert['entity']['uuid'] == order['uuid']
+    assert send_prealert['requests'][0]['type'] == 'CREATE'
+
+
 def test_get_cities(cdek_client: CDEKClient):
-    cities = cdek_client.get_cities(region_code=27,	size=1)
+    cities = cdek_client.get_cities(region_code=27, size=1)
 
     assert cities
     assert cities[0]['country_code'] == 'RU'
