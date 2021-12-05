@@ -4,14 +4,14 @@ import datetime
 import json
 
 import requests
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 from urllib.parse import urlencode
-from xml.etree import ElementTree
-from xml.etree.ElementTree import Element
 
 from boltons.iterutils import remap
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
+
+from .entities import DeliveryRequest
 
 
 class CDEKClient:
@@ -33,9 +33,9 @@ class CDEKClient:
         self.client_secret = client_secret
         self.client_id = client_id
         if not prod_environment:
-            self.url = self.TEST_BASE_URI + self.TOKEN_URI
+            self.url = self.TEST_BASE_URI
         else:
-            self.url = self.PROD_BASE_URI + self.TOKEN_URI
+            self.url = self.PROD_BASE_URI
 
     def get_shipping_cost_by_tariff_code(
             self,
@@ -59,58 +59,59 @@ class CDEKClient:
             'services': services
         }
 
-        url = self.BASE_URI + self.CODE_CALCULATOR_URI
+        url = self.url + self.CODE_CALCULATOR_URI
         response = self._request(url, data=json.dumps(params))
         return response.json()
 
     def create_orders(
-            self,
-            tariff_code: int,
-            recipient: List[dict],
-            packages: List[dict],
-            type: Optional[int] = None,
-            number: Optional[str] = None,
-            comment: Optional[str] = None,
-            developer_key: Optional[str] = None,
-            shipment_point: Optional[str] = None,
-            delivery_point: Optional[str] = None,
-            date_invoice: datetime = None,
-            shipper_name: Optional[str] = None,
-            shipper_address: Optional[str] = None,
-            delivery_recipient_cost: Optional[List[dict]] = None,
-            delivery_recipient_cost_adv: Optional[List[dict]] = None,
-            sender: Optional[List[dict]] = None,
-            seller: Optional[List[dict]] = None,
-            from_location: Optional[List[dict]] = None,
-            to_location: Optional[List[dict]] = None,
-            services: Optional[List[dict]] = None,
-            print: Optional[str] = None
+            self, delivery_request: DeliveryRequest
+    #         tariff_code: int,
+    #         recipient: List[dict],
+    #         packages: List[dict],
+    #         type: Optional[int] = None,
+    #         number: Optional[str] = None,
+    #         comment: Optional[str] = None,
+    #         developer_key: Optional[str] = None,
+    #         shipment_point: Optional[str] = None,
+    #         delivery_point: Optional[str] = None,
+    #         date_invoice: datetime = None,
+    #         shipper_name: Optional[str] = None,
+    #         shipper_address: Optional[str] = None,
+    #         delivery_recipient_cost: Optional[List[dict]] = None,
+    #         delivery_recipient_cost_adv: Optional[List[dict]] = None,
+    #         sender: Optional[List[dict]] = None,
+    #         seller: Optional[List[dict]] = None,
+    #         from_location: Optional[List[dict]] = None,
+    #         to_location: Optional[List[dict]] = None,
+    #         services: Optional[List[dict]] = None,
+    #         print: Optional[str] = None
     ):
-        params = {
-            'tariff_code': tariff_code,
-            'recipient': recipient,
-            'packages': packages,
-            'type': type,
-            'number': number,
-            'comment': comment,
-            'developer_key': developer_key,
-            'shipment_point': shipment_point,
-            'delivery_point': delivery_point,
-            'date_invoice': date_invoice,
-            'shipper_name': shipper_name,
-            'shipper_address': shipper_address,
-            'delivery_recipient_cost': delivery_recipient_cost,
-            'delivery_recipient_cost_adv': delivery_recipient_cost_adv,
-            'sender': sender,
-            'seller': seller,
-            'from_location': from_location,
-            'to_location': to_location,
-            'service': services,
-            'print': print
-        }
+    #     params = {
+    #         'tariff_code': tariff_code,
+    #         'recipient': recipient,
+    #         'packages': packages,
+    #         'type': type,
+    #         'number': number,
+    #         'comment': comment,
+    #         'developer_key': developer_key,
+    #         'shipment_point': shipment_point,
+    #         'delivery_point': delivery_point,
+    #         'date_invoice': date_invoice,
+    #         'shipper_name': shipper_name,
+    #         'shipper_address': shipper_address,
+    #         'delivery_recipient_cost': delivery_recipient_cost,
+    #         'delivery_recipient_cost_adv': delivery_recipient_cost_adv,
+    #         'sender': sender,
+    #         'seller': seller,
+    #         'from_location': from_location,
+    #         'to_location': to_location,
+    #         'service': services,
+    #         'print': print
+    #     }
 
-        url = self.BASE_URI + self.ORDERS_URI
-        response = self._request(url, data=json.dumps(params))
+        url = self.url + self.ORDERS_URI
+        data = json.dumps(delivery_request.to_json())
+        response = self._request(url, data=json.dumps(data))
         return response.json()
 
     def info_orders(
@@ -120,11 +121,11 @@ class CDEKClient:
             im_number: Optional[str] = None,
     ):
         if uuid:
-            url = self.BASE_URI + self.ORDERS_URI+'/'+uuid
+            url = self.url + self.ORDERS_URI+'/'+uuid
         elif cdek_number:
-            url = self.BASE_URI + self.ORDERS_URI + '?cdek_number=' + cdek_number
+            url = self.url + self.ORDERS_URI + '?cdek_number=' + cdek_number
         elif im_number:
-            url = self.BASE_URI + self.ORDERS_URI + '?im_number=' + im_number
+            url = self.url + self.ORDERS_URI + '?im_number=' + im_number
         else:
             raise ValueError("No query parameters defined!")
         response = self._request(url, data={}, method='GET')
@@ -133,7 +134,7 @@ class CDEKClient:
 
 
     def delete_orders(self, uuid: str):
-        url = self.BASE_URI+self.ORDERS_URI+'/'+uuid
+        url = self.url+self.ORDERS_URI+'/'+uuid
         response = self._request(url, data={}, method='DELETE')
         return response.json()
 
@@ -160,7 +161,7 @@ class CDEKClient:
             'page': page,
             'lang': lang
         }
-        url = self.BASE_URI + self.CITIES_URI
+        url = self.url + self.CITIES_URI
         response = self._request(url, data=params, method='GET')
         return response.json()
 
@@ -175,12 +176,12 @@ class CDEKClient:
             'shipment_point': shipment_point,
             'orders': orders
         }
-        url = self.BASE_URI + self.PREALERT_URI
+        url = self.url + self.PREALERT_URI
         response = self._request(url, data=json.dumps(params))
         return response.json()
 
     def info_prealert(self, uuid: str):
-        url = self.BASE_URI + self.PREALERT_URI+'/'+uuid
+        url = self.url + self.PREALERT_URI+'/'+uuid
         response = self._request(url, data={}, method='GET')
         return response.json()
 
@@ -204,9 +205,10 @@ class CDEKClient:
         return response
 
     def _fetch_token(self):
+        url = self.url + self.TOKEN_URI
         oauth_client = BackendApplicationClient(client_id=self.client_id)
         oauth_session = OAuth2Session(client=oauth_client)
-        token = oauth_session.fetch_token(token_url=self.url,
+        token = oauth_session.fetch_token(token_url=url,
                                           client_id=self.client_id,
                                           client_secret=self.client_secret)
         return OAuth2Session(client_id=self.client_id, token=token).access_token

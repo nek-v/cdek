@@ -7,16 +7,6 @@ from typing import Dict
 
 from cdek.client import CDEKClient
 
-
-@pytest.fixture
-def cdek_client():
-    return CDEKClient(
-        client_id='EMscd6r9JnFiQ3bLoyjJY6eM78JrJceI',
-        client_secret='PjLZkKBHEiLK3YsjtNrt3TGNG0ahs3kG',
-        prod_environment=False,
-    )
-
-
 def test__fetch_token(cdek_client: CDEKClient):
     assert cdek_client._fetch_token()
 
@@ -46,51 +36,44 @@ def test_get_shipping_cost_by_tariff_code(cdek_client: CDEKClient, tariff: Dict,
         assert weight_calc == 200
 
 
-@pytest.mark.parametrize('type,expectation', [
-    pytest.param({'type': 1}, does_not_raise(), id='Type Online Store'),
-    pytest.param({'type': 2}, pytest.raises(AttributeError), marks=pytest.mark.xfail, id='Type Delivery')
-])
-def test_order_creation_for_os(cdek_client: CDEKClient, type: Dict,
-                               expectation):
-    with expectation:
-        send_orders = cdek_client.create_orders(
-            from_location=
-            {
-                "code": "44",
-                "city": "Москва",
-                "address": "пр. Ленинградский, д.4"
-            },
-            to_location={
-                "code": "270",
-                "city": "Новосибирск",
-                "address": "ул. Блюхера, 32"
-            },
-            packages=[{
-                "number": "bar-001",
-                "comment": "Упаковка",
-                "height": 10,
-                "items": [{
-                    "ware_key": "00055",
-                    "payment": {
-                        "value": 3000
-                    },
-                    "name": "Товар",
-                    "cost": 300,
-                    "amount": 2,
-                    "weight": 700,
-                    "url": "www.item.ru"
-                }],
-                "length": 10,
-                "weight": 4000,
-                "width": 10
-            }],
-            recipient={
-                "name": "Иванов Иван",
-                "phones": [{"number": "+79134637228"}]
-            },
-            tariff_code=139,
-            **type
-        )
+def test_order_creation_for_os(cdek_client: CDEKClient, delivery_request):
+        send_orders = cdek_client.create_orders(delivery_request)
+        #     from_location=
+        #     {
+        #         "code": "44",
+        #         "city": "Москва",
+        #         "address": "пр. Ленинградский, д.4"
+        #     },
+        #     to_location={
+        #         "code": "270",
+        #         "city": "Новосибирск",
+        #         "address": "ул. Блюхера, 32"
+        #     },
+        #     packages=[{
+        #         "number": "bar-001",
+        #         "comment": "Упаковка",
+        #         "height": 10,
+        #         "items": [{
+        #             "ware_key": "00055",
+        #             "payment": {
+        #                 "value": 3000
+        #             },
+        #             "name": "Товар",
+        #             "cost": 300,
+        #             "amount": 2,
+        #             "weight": 700,
+        #             "url": "www.item.ru"
+        #         }],
+        #         "length": 10,
+        #         "weight": 4000,
+        #         "width": 10
+        #     }],
+        #     recipient={
+        #         "name": "Иванов Иван",
+        #         "phones": [{"number": "+79134637228"}]
+        #     },
+        #     tariff_code=139,
+        # )
 
         assert send_orders
         assert len(send_orders) == 2
