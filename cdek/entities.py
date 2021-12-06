@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
+import decimal
 import json
 from abc import abstractmethod, ABC
+from collections import defaultdict
 from decimal import Decimal
 from typing import Dict, List, Optional, Union
+from itertools import chain
 
 import datetime
 
 
 class AbstractElement(ABC):
     @abstractmethod
-    def to_json(self) -> dict:
+    def to_json(self) -> json:
         raise NotImplementedError
 
 
@@ -22,7 +25,6 @@ class DeliveryRequest(AbstractElement):
     def add_order(self,
                   tariff_code: int,
                   recipient: List[dict],
-                  # packages: List[dict],
                   type: int = 1,
                   number: Optional[str] = None,
                   comment: Optional[str] = None,
@@ -34,13 +36,12 @@ class DeliveryRequest(AbstractElement):
                   shipper_address: Optional[str] = None,
                   delivery_recipient_cost: Optional[List[dict]] = None,
                   delivery_recipient_cost_adv: Optional[List[dict]] = None,
-                  sender: Optional[List[dict]] = None,
+                  sender: List[dict] = None,
                   seller: Optional[List[dict]] = None,
                   print: Optional[str] = None
                   ) -> List:
         self.delivery_request_element['tariff_code'] = tariff_code
         self.delivery_request_element['recipient'] = recipient
-        # packages: List[dict],
         self.delivery_request_element['type'] = type
         self.delivery_request_element['number'] = number
         self.delivery_request_element['comment'] = comment
@@ -59,7 +60,7 @@ class DeliveryRequest(AbstractElement):
 
     @staticmethod
     def add_address(
-            order_element: Optional[dict],
+            order_element: dict,
             code: Optional[str] = None,
             fias_guid: Optional[str] = None,
             postal_code: Optional[str] = None,
@@ -76,28 +77,32 @@ class DeliveryRequest(AbstractElement):
             'to_location': {'code': code, 'fias_guid': fias_guid, 'postal_code': postal_code, 'longitude': longitude,
                             'latitude': latitude, 'country_code': country_code, 'region': region,
                             'region_code': region_code, 'sub_region': sub_region, 'city': city, 'address': address}}
-        var = order_element.update(address_element)
-        return var
+        order_element.update(address_element)
+
+        return order_element
 
     @staticmethod
     def add_package(
-            order_element: List,
-            size_a: Optional[int] = None,
-            size_b: Optional[int] = None,
-            size_c: Optional[int] = None,
-            number: Optional[str] = None,
-            barcode: Optional[str] = None,
-            weight: Optional[int] = None
+            order_element: dict,
+            number: str,
+            weight: int,
+            length: Optional[int] = None,
+            width: Optional[int] = None,
+            height: Optional[int] = None,
+            comment: Optional[str] = 'Package'
     ) -> List:
-        order_number = order_element['number']
-        package_number = number or order_number
-        barcode = barcode or order_number
+        if not (length and width and height):
+            length = width = height = None
 
-        if not (size_a and size_b and size_c):
-            size_a = size_b = size_c = None
-
-        package_element = order_element
-
+        package_element = {'packages': [{
+            'number': number,
+            'weight': weight,
+            'length': length,
+            'width': width,
+            'height': height,
+            'comment': comment
+        }]}
+        order_element.update(package_element)
         return package_element
 
     @staticmethod
@@ -118,21 +123,44 @@ class DeliveryRequest(AbstractElement):
             wifi_gsm: Optional[bool] = None,
             url: Optional[str] = None
     ) -> List:
-        item_element = package_element
-        item_element['name'] = name
-        return item_element
+        item_element = {
+            'name': name,
+            'ware_key': ware_key,
+            'cost': cost,
+            'weight': weight,
+            'amount': amount,
+            'marking': marking,
+            'payment': {'value': payment},
+            'weight_gross': weight_gross,
+            'name_i18n': name_i18n,
+            'brand': brand,
+            'country_code': country_code,
+            'material': material,
+            'wifi_gsm': wifi_gsm,
+            'url': url,
+        }
+        for p in package_element['packages']:
+            p['items'] = [item_element]
+        return package_element
 
     @staticmethod
     def add_service(
             code: str,
             parameter: Optional[str] = None
     ) -> List:
-        add_service_element = {
+        add_service_element = {'services': [{
             'code': code,
             'parameter': parameter
-        }
+        }]}
 
         return add_service_element
 
-    def to_json(self) -> dict:
-        return self.delivery_request_element
+    def to_json(self) -> json:
+        return json.dumps(self.delivery_request_element, cls=DecimalEncoder)
+
+
+class DecimalEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, decimal.Decimal):
+            return str(o)
+        return super(DecimalEncoder, self).default(o)
