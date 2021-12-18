@@ -6,6 +6,8 @@ from abc import ABC, abstractmethod
 from decimal import Decimal
 from typing import List, Optional, Union
 
+Date = Union[datetime.datetime, datetime.date]
+
 
 class AbstractElement(ABC):
     @abstractmethod
@@ -15,9 +17,6 @@ class AbstractElement(ABC):
 
 class DeliveryRequest(AbstractElement):
     delivery_request_element = {}
-
-    # def __init__(self, number: str):
-    #     self.number = number
 
     def add_order(
         self,
@@ -63,7 +62,7 @@ class DeliveryRequest(AbstractElement):
     @staticmethod
     def add_address(
         order_element: dict,
-        location: str = "to_location",
+        location_type: str,
         code: Optional[str] = None,
         fias_guid: Optional[str] = None,
         postal_code: Optional[str] = None,
@@ -76,23 +75,27 @@ class DeliveryRequest(AbstractElement):
         city: Optional[str] = None,
         address: Optional[str] = None,
     ) -> List:
-        address_element = {
-            location: {
-                "code": code,
-                "fias_guid": fias_guid,
-                "postal_code": postal_code,
-                "longitude": longitude,
-                "latitude": latitude,
-                "country_code": country_code,
-                "region": region,
-                "region_code": region_code,
-                "sub_region": sub_region,
-                "city": city,
-                "address": address,
+        if location_type == "from_location" or location_type == "to_location":
+            address_element = {
+                location_type: {
+                    "code": code,
+                    "fias_guid": fias_guid,
+                    "postal_code": postal_code,
+                    "longitude": longitude,
+                    "latitude": latitude,
+                    "country_code": country_code,
+                    "region": region,
+                    "region_code": region_code,
+                    "sub_region": sub_region,
+                    "city": city,
+                    "address": address,
+                }
             }
-        }
-        order_element.update(address_element)
-
+            order_element.update(address_element)
+        else:
+            raise ValueError(
+                "Invalid location_type value. The value can be 'from_location' or 'to_location'."
+            )
         return order_element
 
     @staticmethod
@@ -165,12 +168,44 @@ class DeliveryRequest(AbstractElement):
     def add_service(
         order_element: dict, code: str, parameter: Optional[str] = None
     ) -> List:
-        service_element = {"services": [{"code": code, "parameter": parameter}]}
+        service_element = {
+            "services": [{"code": code, "parameter": parameter}]
+        }
         order_element.update(service_element)
         return service_element
 
     def to_json(self) -> json:
         return json.dumps(self.delivery_request_element, cls=DecimalEncoder)
+
+
+class PreAlert(AbstractElement):
+    pre_alert_element = {}
+
+    def __init__(self, planned_date: Date, shipment_point: str):
+        self.pre_alert_element = {
+            "orders": [],
+            "planned_date": planned_date.astimezone().strftime(
+                "%Y-%m-%dT%H:%M:%S%z"
+            ),
+            "shipment_point": shipment_point,
+        }
+
+    def add_order(
+        self,
+        order_uuid: Optional[str] = None,
+        cdek_number: Optional[int] = None,
+        im_number: Optional[int] = None,
+    ) -> List:
+        order_element = {
+            "order_uuid": order_uuid,
+            "cdek_number": cdek_number,
+            "im_number": im_number,
+        }
+        self.pre_alert_element["orders"] = order_element
+        return self.pre_alert_element
+
+    def to_json(self) -> json:
+        return json.dumps(self.pre_alert_element, cls=DecimalEncoder)
 
 
 class DecimalEncoder(json.JSONEncoder):

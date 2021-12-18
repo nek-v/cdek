@@ -9,7 +9,7 @@ from boltons.iterutils import remap
 from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
-from .entities import DeliveryRequest
+from .entities import DeliveryRequest, PreAlert
 
 
 class CDEKClient:
@@ -116,21 +116,12 @@ class CDEKClient:
         response = self._request(url, data=params, method="GET")
         return response.json()
 
-    def create_prealert(
-        self, planned_date: datetime, shipment_point: str, orders: dict,
-    ):
-        params = {
-            "planned_date": planned_date,
-            "shipment_point": shipment_point,
-            "orders": orders,
-        }
-        url = self.url + self.PREALERT_URI
-        response = self._request(url, data=json.dumps(params))
-        return response.json()
+    def create_prealerts(self, pre_alert: PreAlert):
 
-    def info_prealert(self, uuid: str):
-        url = self.url + self.PREALERT_URI + "/" + uuid
-        response = self._request(url, data={}, method="GET")
+        url = self.url + self.PREALERT_URI
+        response = self._request(
+            url, data=json.dumps(pre_alert.pre_alert_element)
+        )
         return response.json()
 
     def _request(
@@ -147,7 +138,9 @@ class CDEKClient:
             url = f"{url}?{urlencode(data)}"
             response = requests.get(url, stream=stream, headers=headers)
         elif method == "POST":
-            response = requests.post(url, data=data, stream=stream, headers=headers)
+            response = requests.post(
+                url, data=data, stream=stream, headers=headers
+            )
         elif method == "DELETE":
             response = requests.delete(url, stream=stream, headers=headers)
         else:
@@ -160,6 +153,10 @@ class CDEKClient:
         oauth_client = BackendApplicationClient(client_id=self.client_id)
         oauth_session = OAuth2Session(client=oauth_client)
         token = oauth_session.fetch_token(
-            token_url=url, client_id=self.client_id, client_secret=self.client_secret
+            token_url=url,
+            client_id=self.client_id,
+            client_secret=self.client_secret,
         )
-        return OAuth2Session(client_id=self.client_id, token=token).access_token
+        return OAuth2Session(
+            client_id=self.client_id, token=token
+        ).access_token
